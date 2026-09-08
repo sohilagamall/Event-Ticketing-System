@@ -1,9 +1,9 @@
 using EventTicketing.Api.ExceptionHandling;
+using EventTicketing.Infrastructure.DependencyInjection;
+using EventTicketing.Infrastructure.Identity;
 using EventTicketing.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using EventTicketing.Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
-using EventTicketing.Application.Features.Authentication.Register;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,29 +14,31 @@ var connectionString = builder.Configuration.
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddDataProtection();
-builder.Services.AddIdentityCore<ApplicationUser>(options =>
-{
-    options.User.RequireUniqueEmail = true;
-
-    options.Password.RequiredLength = 8;
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequireNonAlphanumeric = false;
-
-})
-    .AddRoles<IdentityRole<Guid>>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
-builder.Services.AddScoped<IRegistrationService, IdentityRegistrationService>();
-
+builder.Services.AddAuthenticationInfrastructure(builder.Configuration); // Add authentication infrastructure
+builder.Services.AddUserManagementInfrastructure(); 
 
 builder.Services.AddControllers();
-builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "Paste a JWT access token."
+    });
+
+    options.AddSecurityRequirement(document =>
+        new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference(
+                "bearer",
+                document)] = []
+        });
+});
 
 var app = builder.Build();
 
@@ -52,6 +54,7 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
