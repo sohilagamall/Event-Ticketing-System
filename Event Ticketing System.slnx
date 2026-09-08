@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="src/EventTicketing.Api/EventTicketing.Api.csproj" />
+  <Project Path="src/EventTicketing.Application/EventTicketing.Application.csproj" />
+  <Project Path="src/EventTicketing.Domain/EventTicketing.Domain.csproj" />
+  <Project Path="src/EventTicketing.Infrastructure/EventTicketing.Infrastructure.csproj" />
+  <Project Path="tests/EventTicketing.Tests/EventTicketing.Tests.csproj" />
+</Solution>
