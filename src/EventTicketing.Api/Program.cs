@@ -15,6 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddAuthenticationInfrastructure(builder.Configuration); // Add authentication infrastructure
+builder.Services.AddUserManagementInfrastructure(); 
 
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
