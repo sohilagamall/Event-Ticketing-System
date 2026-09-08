@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-
+using EventTicketing.Application.Features.Authentication.Login;
+using EventTicketing.Infrastructure.Identity.Services;
 namespace EventTicketing.Infrastructure.DependencyInjection;
 
 public static class AuthenticationServiceExtension
@@ -32,8 +33,14 @@ public static class AuthenticationServiceExtension
             options.Password.RequireUppercase = true;
             options.Password.RequireNonAlphanumeric = false;
 
+            //After five failed password attempts, Identity locks the account for 15 minutes.
+            options.Lockout.AllowedForNewUsers = true;
+            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+
         })
             .AddRoles<IdentityRole<Guid>>()
+            .AddSignInManager()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
@@ -65,6 +72,9 @@ public static class AuthenticationServiceExtension
 
         services.AddAuthorization();
         services.AddScoped<IRegistrationService, IdentityRegistrationService>();
+        services.AddSingleton(TimeProvider.System);
+        services.AddScoped<IAccessTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<ILoginService, IdentityLoginService>();
 
         return services;
 

@@ -4,7 +4,7 @@ using EventTicketing.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 
 
-namespace EventTicketing.Infrastructure.Identity
+namespace EventTicketing.Infrastructure.Identity.Services
 {
     public sealed class IdentityRegistrationService(UserManager<ApplicationUser> userManager, AppDbContext dbContext) : IRegistrationService
     {

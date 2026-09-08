@@ -1,8 +1,9 @@
 using EventTicketing.Api.ExceptionHandling;
+using EventTicketing.Infrastructure.DependencyInjection;
+using EventTicketing.Infrastructure.Identity;
 using EventTicketing.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using EventTicketing.Infrastructure.Identity;
-using EventTicketing.Infrastructure.DependencyInjection;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,10 +17,27 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddAuthenticationInfrastructure(builder.Configuration); // Add authentication infrastructure
 
 builder.Services.AddControllers();
-builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "Paste a JWT access token."
+    });
+
+    options.AddSecurityRequirement(document =>
+        new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference(
+                "bearer",
+                document)] = []
+        });
+});
 
 var app = builder.Build();
 
